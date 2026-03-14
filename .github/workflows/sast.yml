@@ -17,11 +17,11 @@ jobs:
       options: --user root
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
       - name: Semgrep Analysis
         run: semgrep scan --config auto --json --output semgrep.json || true
       - name: Upload SAST Result
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v5
         with:
           name: semgrep-results
           path: semgrep.json
@@ -36,7 +36,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v5
         with:
           name: semgrep-results
           path: semgrep-results # フォルダ名を明示してパスを固定
