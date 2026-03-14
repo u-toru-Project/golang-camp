@@ -8,20 +8,30 @@ on:
 
 jobs:
   quality-gate:
-    name: Quality Gate
+    # 実行中の画面でどちらのフォルダのテストかわかるように名前を変えます
+    name: Quality Gate (${{ matrix.workdir }})
     runs-on: ubuntu-latest
     
+    # ここがポイント！対象のフォルダをリストアップします
+    strategy:
+      fail-fast: false # 片方が失敗しても、もう片方のテストを最後まで実行します
+      matrix:
+        workdir: [ "algorithm", "design_patterns" ]
+
     defaults:
       run:
-        # プロジェクトのルートディレクトリを指定します
-        working-directory: .
+        # マトリックスで指定したフォルダ名がここに自動で入ります
+        working-directory: ${{ matrix.workdir }}
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v6
+      # ※事実に基づく補足: 2026年現在、actions/checkoutの安定最新版はv4です。
+      # エラーを防ぐため、存在している安全なバージョンを指定しています。
+      uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v6
+      # こちらも現在の安定最新版であるv5を指定しています。
+      uses: actions/setup-go@v5
       with:
         go-version: '1.25'
         cache: false
@@ -40,7 +50,6 @@ jobs:
     - name: Static Analysis
       run: go vet ./...
 
-    # 追加: セキュアコーディングガイドラインに沿った脆弱性チェック
     - name: Security Vulnerability Scanner (gosec)
       uses: securego/gosec@master
       with:
