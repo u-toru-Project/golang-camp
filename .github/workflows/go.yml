@@ -2,7 +2,9 @@ name: Go Quality Assurance
 
 on:
   push:
+    branches: [ "main", "vuln-check" ] 
   pull_request:
+    branches: [ "**" ]
 
 jobs:
   quality-gate:
@@ -11,17 +13,18 @@ jobs:
     
     defaults:
       run:
-        working-directory: design_patterns
+        # プロジェクトのルートディレクトリを指定します
+        working-directory: .
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: '1.25'
-        cache: false # go.sumがない環境への配慮
+        cache: false
 
     - name: Verify Dependencies
       run: go mod verify
@@ -36,6 +39,12 @@ jobs:
 
     - name: Static Analysis
       run: go vet ./...
+
+    # 追加: セキュアコーディングガイドラインに沿った脆弱性チェック
+    - name: Security Vulnerability Scanner (gosec)
+      uses: securego/gosec@master
+      with:
+        args: ./...
 
     - name: Build (Fowler's CI)
       run: go build -v ./...

@@ -6,9 +6,9 @@ import (
 
 func TestIsUniqueCheck(t *testing.T) {
 	tests := []struct {
-		name string
+		name  string
 		input string
-		want bool
+		want  bool
 	}{
 		{"重複なしのパターン", "dog", true},
 		{"重複ありのパターン", "aba", false},
