@@ -3,20 +3,41 @@ package command
 import "testing"
 
 func TestSimpleRemoteControl(t *testing.T) {
-	// 1. 準備
-	remote := &SimpleRemoteControl{}
 	light := &Light{}
 
-	lightOnCmd := NewLightOnCommand(light)
+	tests := []struct {
+		name     string
+		command  Command
+		expected string
+	}{
+		{
+			name:     "light on",
+			command:  NewLightOnCommand(light),
+			expected: "Light is On",
+		},
+		{
+			name:     "light off",
+			command:  NewLightOffCommand(light),
+			expected: "Light is Off",
+		},
+	}
 
-	remote.SetCommand(lightOnCmd)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			remote := &SimpleRemoteControl{}
+			remote.SetCommand(tt.command)
 
-	// 2. 実行
-	result := remote.ButtonWasPressed()
+			if got := remote.ButtonWasPressed(); got != tt.expected {
+				t.Errorf("ButtonWasPressed() = %q, want %q", got, tt.expected)
+			}
+		})
+	}
+}
 
-	// 3. 検証
-	expected := "Light is On"
-	if result != expected {
-		t.Errorf("期待値: %v, 実際: %v", expected, result)
+func TestSimpleRemoteControlWithoutCommand(t *testing.T) {
+	remote := &SimpleRemoteControl{}
+
+	if got := remote.ButtonWasPressed(); got != "No command assigned" {
+		t.Errorf("ButtonWasPressed() = %q, want %q", got, "No command assigned")
 	}
 }

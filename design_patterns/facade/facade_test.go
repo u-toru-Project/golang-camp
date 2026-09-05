@@ -10,6 +10,7 @@ func TestHomeTheaterFacadeWatchMovieAndEndMovie(t *testing.T) {
 	var out bytes.Buffer
 
 	homeTheater := NewHomeTheaterFacade(
+		&out,
 		NewAmplifier(&out),
 		NewStreamingPlayer(&out),
 		NewProjector(&out),
@@ -67,6 +68,7 @@ func TestNewHomeTheaterFacadePanicsWhenSubsystemIsMissing(t *testing.T) {
 
 	var out bytes.Buffer
 	NewHomeTheaterFacade(
+		&out,
 		nil,
 		NewStreamingPlayer(&out),
 		NewProjector(&out),

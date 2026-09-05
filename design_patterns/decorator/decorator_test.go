@@ -1,8 +1,6 @@
 package decorator
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestDecoratorPattern(t *testing.T) {
 	tests := []struct {
@@ -13,43 +11,43 @@ func TestDecoratorPattern(t *testing.T) {
 	}{
 		{
 			name:     "Espresso",
-			beverage: &Espresso{},
+			beverage: NewEspresso(),
 			wantCost: 1.99,
 			wantDesc: "Espresso",
 		},
 		{
 			name:     "House Blend",
-			beverage: &HouseBlend{},
+			beverage: NewHouseBlend(),
 			wantCost: 0.89,
 			wantDesc: "House Blend Coffee",
 		},
 		{
 			name:     "Espresso with Mocha",
-			beverage: &Mocha{Beverage: &Espresso{}},
+			beverage: NewMocha(NewEspresso()),
 			wantCost: 2.19,
 			wantDesc: "Espresso, Mocha",
 		},
 		{
 			name:     "Espresso with Whip",
-			beverage: &Whip{Beverage: &Espresso{}},
+			beverage: NewWhip(NewEspresso()),
 			wantCost: 2.09,
 			wantDesc: "Espresso, Whip",
 		},
 		{
 			name:     "Espresso with Soy",
-			beverage: &Soy{Beverage: &Espresso{}},
+			beverage: NewSoy(NewEspresso()),
 			wantCost: 2.14,
 			wantDesc: "Espresso, Soy",
 		},
 		{
 			name:     "House Blend with Soy, Mocha, Whip",
-			beverage: &Whip{Beverage: &Mocha{Beverage: &Soy{Beverage: &HouseBlend{}}}},
+			beverage: NewWhip(NewMocha(NewSoy(NewHouseBlend()))),
 			wantCost: 1.34,
 			wantDesc: "House Blend Coffee, Soy, Mocha, Whip",
 		},
 		{
 			name:     "Double Mocha",
-			beverage: &Mocha{Beverage: &Mocha{Beverage: &Espresso{}}},
+			beverage: NewMocha(NewMocha(NewEspresso())),
 			wantCost: 2.39,
 			wantDesc: "Espresso, Mocha, Mocha",
 		},
@@ -57,14 +55,11 @@ func TestDecoratorPattern(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotCost := tt.beverage.Cost()
-			gotDesc := tt.beverage.GetDescription()
-
-			if gotCost != tt.wantCost {
-				t.Errorf("Cost() = %.2f, want %.2f", gotCost, tt.wantCost)
+			if got := tt.beverage.Cost(); got != tt.wantCost {
+				t.Errorf("Cost() = %.2f, want %.2f", got, tt.wantCost)
 			}
-			if gotDesc != tt.wantDesc {
-				t.Errorf("GetDescription() = %q, want %q", gotDesc, tt.wantDesc)
+			if got := tt.beverage.GetDescription(); got != tt.wantDesc {
+				t.Errorf("GetDescription() = %q, want %q", got, tt.wantDesc)
 			}
 		})
 	}

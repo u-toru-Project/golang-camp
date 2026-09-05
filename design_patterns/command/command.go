@@ -19,13 +19,23 @@ type LightOnCommand struct {
 }
 
 func NewLightOnCommand(light *Light) *LightOnCommand {
-	return &LightOnCommand{
-		light: light,
-	}
+	return &LightOnCommand{light: light}
 }
 
 func (c *LightOnCommand) Execute() string {
 	return c.light.On()
+}
+
+type LightOffCommand struct {
+	light *Light
+}
+
+func NewLightOffCommand(light *Light) *LightOffCommand {
+	return &LightOffCommand{light: light}
+}
+
+func (c *LightOffCommand) Execute() string {
+	return c.light.Off()
 }
 
 type SimpleRemoteControl struct {
@@ -37,8 +47,8 @@ func (r *SimpleRemoteControl) SetCommand(cmd Command) {
 }
 
 func (r *SimpleRemoteControl) ButtonWasPressed() string {
-	if r.slot != nil {
-		return r.slot.Execute()
+	if r.slot == nil {
+		return "No command assigned"
 	}
-	return "No command assigned"
+	return r.slot.Execute()
 }

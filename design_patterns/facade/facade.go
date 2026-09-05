@@ -135,6 +135,7 @@ func (a *Amplifier) Off() {
 }
 
 type HomeTheaterFacade struct {
+	out       io.Writer
 	amp       *Amplifier
 	player    *StreamingPlayer
 	projector *Projector
@@ -144,6 +145,7 @@ type HomeTheaterFacade struct {
 }
 
 func NewHomeTheaterFacade(
+	out io.Writer,
 	amp *Amplifier,
 	player *StreamingPlayer,
 	projector *Projector,
@@ -151,11 +153,12 @@ func NewHomeTheaterFacade(
 	screen *Screen,
 	popper *PopcornPopper,
 ) *HomeTheaterFacade {
-	if amp == nil || player == nil || projector == nil || lights == nil || screen == nil || popper == nil {
-		panic("home theater facade requires all subsystem components")
+	if out == nil || amp == nil || player == nil || projector == nil || lights == nil || screen == nil || popper == nil {
+		panic("home theater facade requires output writer and all subsystem components")
 	}
 
 	return &HomeTheaterFacade{
+		out:       out,
 		amp:       amp,
 		player:    player,
 		projector: projector,
@@ -166,7 +169,7 @@ func NewHomeTheaterFacade(
 }
 
 func (f *HomeTheaterFacade) WatchMovie(movie string) {
-	fmt.Fprintln(f.popper.out, "映画を見る準備をしています...")
+	fmt.Fprintln(f.out, "映画を見る準備をしています...")
 	f.popper.On()
 	f.popper.Pop()
 	f.lights.Dim(defaultDimLevel)
@@ -182,7 +185,7 @@ func (f *HomeTheaterFacade) WatchMovie(movie string) {
 }
 
 func (f *HomeTheaterFacade) EndMovie() {
-	fmt.Fprintln(f.popper.out, "\n映画館をシャットダウンしています...")
+	fmt.Fprintln(f.out, "\n映画館をシャットダウンしています...")
 	f.popper.Off()
 	f.lights.On()
 	f.screen.Up()

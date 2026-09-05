@@ -1,6 +1,4 @@
-package main
-
-import "fmt"
+package composite
 
 type FileSystemNode interface {
 	Name() string
@@ -10,6 +8,10 @@ type FileSystemNode interface {
 type File struct {
 	name string
 	size int
+}
+
+func NewFile(name string, size int) *File {
+	return &File{name: name, size: size}
 }
 
 func (f *File) Name() string {
@@ -46,23 +48,4 @@ func (d *Directory) Size() int {
 		totalSize += child.Size()
 	}
 	return totalSize
-}
-
-func main() {
-	root := NewDirectory("root")
-	bin := NewDirectory("bin")
-	tmp := NewDirectory("tmp")
-
-	file1 := &File{name: "vi", size: 1000}
-	file2 := &File{name: "latex", size: 2000}
-	file3 := &File{name: "temp.txt", size: 500}
-
-	bin.Add(file1)
-	bin.Add(file2)
-	bin.Add(file3)
-
-	root.Add(bin)
-	root.Add(tmp)
-
-	fmt.Printf("Directory '%s' total size: %d\n", root.Name(), root.Size())
 }

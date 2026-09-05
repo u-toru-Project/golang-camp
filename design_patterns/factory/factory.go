@@ -1,17 +1,18 @@
-package main
+package factory
 
 import (
 	"fmt"
+	"io"
 )
 
-const cheesePizza = "cheese"
+const CheesePizza = "cheese"
 
 // Pizza defines the operations every concrete pizza must provide.
 type Pizza interface {
-	Prepare()
-	Bake()
-	Cut()
-	Box()
+	Prepare(w io.Writer)
+	Bake(w io.Writer)
+	Cut(w io.Writer)
+	Box(w io.Writer)
 	GetName() string
 }
 
@@ -21,20 +22,20 @@ type basePizza struct {
 	cutMessage     string
 }
 
-func (p *basePizza) Prepare() {
-	fmt.Println(p.prepareMessage)
+func (p *basePizza) Prepare(w io.Writer) {
+	fmt.Fprintln(w, p.prepareMessage)
 }
 
-func (p *basePizza) Bake() {
-	fmt.Println("Bake for 25 minutes at 350")
+func (p *basePizza) Bake(w io.Writer) {
+	fmt.Fprintln(w, "Bake for 25 minutes at 350")
 }
 
-func (p *basePizza) Cut() {
-	fmt.Println(p.cutMessage)
+func (p *basePizza) Cut(w io.Writer) {
+	fmt.Fprintln(w, p.cutMessage)
 }
 
-func (p *basePizza) Box() {
-	fmt.Println("Place pizza in official PizzaStore box")
+func (p *basePizza) Box(w io.Writer) {
+	fmt.Fprintln(w, "Place pizza in official PizzaStore box")
 }
 
 func (p *basePizza) GetName() string {
@@ -93,7 +94,7 @@ func NewNYPizzaFactory() PizzaFactory {
 	return &regionalPizzaFactory{
 		style: "NY",
 		menu: map[string]pizzaBuilder{
-			cheesePizza: newNYStyleCheesePizza,
+			CheesePizza: newNYStyleCheesePizza,
 		},
 	}
 }
@@ -102,17 +103,22 @@ func NewChicagoPizzaFactory() PizzaFactory {
 	return &regionalPizzaFactory{
 		style: "Chicago",
 		menu: map[string]pizzaBuilder{
-			cheesePizza: newChicagoStyleCheesePizza,
+			CheesePizza: newChicagoStyleCheesePizza,
 		},
 	}
 }
 
 type PizzaStore struct {
 	factory PizzaFactory
+	out     io.Writer
 }
 
-func NewPizzaStore(factory PizzaFactory) *PizzaStore {
-	return &PizzaStore{factory: factory}
+func NewPizzaStore(factory PizzaFactory, out io.Writer) *PizzaStore {
+	if out == nil {
+		panic("pizza store requires an output writer")
+	}
+
+	return &PizzaStore{factory: factory, out: out}
 }
 
 func (ps *PizzaStore) OrderPizza(item string) (Pizza, error) {
@@ -121,25 +127,11 @@ func (ps *PizzaStore) OrderPizza(item string) (Pizza, error) {
 		return nil, err
 	}
 
-	fmt.Printf("--- Making a %s ---\n", pizza.GetName())
-	pizza.Prepare()
-	pizza.Bake()
-	pizza.Cut()
-	pizza.Box()
+	fmt.Fprintf(ps.out, "--- Making a %s ---\n", pizza.GetName())
+	pizza.Prepare(ps.out)
+	pizza.Bake(ps.out)
+	pizza.Cut(ps.out)
+	pizza.Box(ps.out)
 
 	return pizza, nil
-}
-
-func main() {
-	nyStore := NewPizzaStore(NewNYPizzaFactory())
-	if _, err := nyStore.OrderPizza(cheesePizza); err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println()
-
-	chicagoStore := NewPizzaStore(NewChicagoPizzaFactory())
-	if _, err := chicagoStore.OrderPizza(cheesePizza); err != nil {
-		fmt.Println(err)
-	}
 }
