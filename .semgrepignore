@@ -2,6 +2,7 @@
 # crypto/rand would change the educational purpose (e.g. rand7-from-rand5, shuffle).
 CtCI-6th-Edition-Go/chapter04/q4_11_random_node.go
 CtCI-6th-Edition-Go/chapter06/q6_07_the_apocalypse.go
+CtCI-6th-Edition-Go/chapter06/chapter06_test.go
 CtCI-6th-Edition-Go/chapter07/q7_01_deck_of_cards.go
 CtCI-6th-Edition-Go/chapter07/q7_10_minesweeper.go
 CtCI-6th-Edition-Go/chapter16/q16_23_rand7_from_rand5.go
