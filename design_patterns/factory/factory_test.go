@@ -1,9 +1,7 @@
-package main
+package factory
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -33,11 +31,10 @@ func TestRegionalFactoriesCreateCheesePizza(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			pizza, err := tt.factory.CreatePizza(cheesePizza)
+			pizza, err := tt.factory.CreatePizza(CheesePizza)
 			if err != nil {
 				t.Fatalf("CreatePizza() error = %v", err)
 			}
@@ -76,19 +73,19 @@ func TestRegionalFactoryCreatePizzaUnknownType(t *testing.T) {
 }
 
 func TestPizzaStoreOrderPizza(t *testing.T) {
-	store := NewPizzaStore(NewChicagoPizzaFactory())
+	var out bytes.Buffer
+	store := NewPizzaStore(NewChicagoPizzaFactory(), &out)
 
-	output := captureStdout(t, func() {
-		pizza, err := store.OrderPizza(cheesePizza)
-		if err != nil {
-			t.Fatalf("OrderPizza() error = %v", err)
-		}
+	pizza, err := store.OrderPizza(CheesePizza)
+	if err != nil {
+		t.Fatalf("OrderPizza() error = %v", err)
+	}
 
-		if got, want := pizza.GetName(), "Chicago Style Deep Dish Cheese Pizza"; got != want {
-			t.Fatalf("GetName() = %q, want %q", got, want)
-		}
-	})
+	if got, want := pizza.GetName(), "Chicago Style Deep Dish Cheese Pizza"; got != want {
+		t.Fatalf("GetName() = %q, want %q", got, want)
+	}
 
+	output := out.String()
 	for _, want := range []string{
 		"--- Making a Chicago Style Deep Dish Cheese Pizza ---",
 		"Preparing Chicago style dough, sauce, and cheese",
@@ -108,7 +105,7 @@ func TestPizzaStoreOrderPizzaPropagatesFactoryError(t *testing.T) {
 	store := NewPizzaStore(&regionalPizzaFactory{
 		style: "Test",
 		menu:  map[string]pizzaBuilder{},
-	})
+	}, &bytes.Buffer{})
 
 	pizza, err := store.OrderPizza("unknown")
 	if err == nil {
@@ -124,28 +121,12 @@ func TestPizzaStoreOrderPizzaPropagatesFactoryError(t *testing.T) {
 	}
 }
 
-func captureStdout(t *testing.T, fn func()) string {
-	t.Helper()
-
-	originalStdout := os.Stdout
-	reader, writer, err := os.Pipe()
-	if err != nil {
-		t.Fatalf("os.Pipe() error = %v", err)
-	}
-
-	os.Stdout = writer
-
-	outputCh := make(chan string, 1)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, reader)
-		outputCh <- buf.String()
+func TestNewPizzaStorePanicsWhenWriterIsMissing(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected panic when writer is missing")
+		}
 	}()
 
-	fn()
-
-	os.Stdout = originalStdout
-	_ = writer.Close()
-
-	return <-outputCh
+	NewPizzaStore(NewNYPizzaFactory(), nil)
 }

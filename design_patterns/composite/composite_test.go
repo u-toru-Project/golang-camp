@@ -1,8 +1,6 @@
-package main
+package composite
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestCompositeSize(t *testing.T) {
 	tests := []struct {
@@ -13,7 +11,7 @@ func TestCompositeSize(t *testing.T) {
 		{
 			name: "単一のファイルのサイズ",
 			setup: func() FileSystemNode {
-				return &File{name: "test.txt", size: 100}
+				return NewFile("test.txt", 100)
 			},
 			expected: 100,
 		},
@@ -28,8 +26,8 @@ func TestCompositeSize(t *testing.T) {
 			name: "ファイルが複数入ったディレクトリのサイズ",
 			setup: func() FileSystemNode {
 				dir := NewDirectory("docs")
-				dir.Add(&File{name: "a.txt", size: 10})
-				dir.Add(&File{name: "b.txt", size: 20})
+				dir.Add(NewFile("a.txt", 10))
+				dir.Add(NewFile("b.txt", 20))
 				return dir
 			},
 			expected: 30,
@@ -40,9 +38,9 @@ func TestCompositeSize(t *testing.T) {
 				rootDir := NewDirectory("root")
 				subDir := NewDirectory("sub")
 
-				subDir.Add(&File{name: "sub_file.txt", size: 50})
+				subDir.Add(NewFile("sub_file.txt", 50))
 				rootDir.Add(subDir)
-				rootDir.Add(&File{name: "root_file.txt", size: 100})
+				rootDir.Add(NewFile("root_file.txt", 100))
 
 				return rootDir
 			},
@@ -53,10 +51,8 @@ func TestCompositeSize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			node := tt.setup()
-			actual := node.Size()
-
-			if actual != tt.expected {
-				t.Errorf("got %d, want %d", actual, tt.expected)
+			if got := node.Size(); got != tt.expected {
+				t.Errorf("Size() = %d, want %d", got, tt.expected)
 			}
 		})
 	}

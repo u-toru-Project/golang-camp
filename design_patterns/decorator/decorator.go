@@ -33,50 +33,32 @@ func NewHouseBlend() Beverage {
 	return HouseBlend{}
 }
 
-type Mocha struct {
+type topping struct {
 	Beverage
+	label   string
+	addCost float64
+}
+
+func newTopping(b Beverage, label string, addCost float64) Beverage {
+	return topping{Beverage: b, label: label, addCost: addCost}
+}
+
+func (t topping) GetDescription() string {
+	return t.Beverage.GetDescription() + ", " + t.label
+}
+
+func (t topping) Cost() float64 {
+	return t.Beverage.Cost() + t.addCost
 }
 
 func NewMocha(b Beverage) Beverage {
-	return Mocha{Beverage: b}
-}
-
-func (m Mocha) GetDescription() string {
-	return m.Beverage.GetDescription() + ", Mocha"
-}
-
-func (m Mocha) Cost() float64 {
-	return m.Beverage.Cost() + 0.20
-}
-
-type Whip struct {
-	Beverage
+	return newTopping(b, "Mocha", 0.20)
 }
 
 func NewWhip(b Beverage) Beverage {
-	return Whip{Beverage: b}
-}
-
-func (w Whip) GetDescription() string {
-	return w.Beverage.GetDescription() + ", Whip"
-}
-
-func (w Whip) Cost() float64 {
-	return w.Beverage.Cost() + 0.10
-}
-
-type Soy struct {
-	Beverage
+	return newTopping(b, "Whip", 0.10)
 }
 
 func NewSoy(b Beverage) Beverage {
-	return Soy{Beverage: b}
-}
-
-func (s Soy) GetDescription() string {
-	return s.Beverage.GetDescription() + ", Soy"
-}
-
-func (s Soy) Cost() float64 {
-	return s.Beverage.Cost() + 0.15
+	return newTopping(b, "Soy", 0.15)
 }

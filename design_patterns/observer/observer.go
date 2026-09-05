@@ -1,4 +1,4 @@
-package main
+package observer
 
 import "fmt"
 
@@ -33,7 +33,12 @@ func (i *Item) Register(o Observer) {
 }
 
 func (i *Item) Deregister(o Observer) {
-
+	for idx, observer := range i.observerList {
+		if observer == o {
+			i.observerList = append(i.observerList[:idx], i.observerList[idx+1:]...)
+			return
+		}
+	}
 }
 
 func (i *Item) NotifyAll() {
@@ -63,20 +68,4 @@ func (l *SystemLogger) Update(itemName string) {
 	logMsg := fmt.Sprintf("[Log] システム記録: アイテム「%s」の入荷イベントを検知しました。\n", itemName)
 	l.LogData = append(l.LogData, logMsg)
 	fmt.Println(logMsg)
-}
-
-func main() {
-	nintendoSwitch := NewItem("Nintendo Switch")
-
-	customer1 := &Customer{id: "Alice"}
-	customer2 := &Customer{id: "Bob"}
-
-	logger := &SystemLogger{}
-
-	nintendoSwitch.Register(customer1)
-	nintendoSwitch.Register(customer2)
-
-	nintendoSwitch.Register(logger)
-
-	nintendoSwitch.UpdateAvailability()
 }

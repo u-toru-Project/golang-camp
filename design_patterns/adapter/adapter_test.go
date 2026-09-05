@@ -1,24 +1,36 @@
 package adapter
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestTurkeyAdapter(t *testing.T) {
-	// 1. 準備: 既存の七面鳥を用意し、アダプターで包みます
-	turkey := &WildTurkey{}
-	adapter := NewTurkeyAdapter(turkey)
-
-	// 2. 実行
-	// 3. 検証
-	expectedQuack := "グワッグワッ"
-	if got := adapter.Quack(); got != expectedQuack {
-		t.Errorf("Quack() の結果が違います。期待値: %v, 実際: %v", expectedQuack, got)
+	tests := []struct {
+		name      string
+		turkey    Turkey
+		wantQuack string
+		wantFly   string
+	}{
+		{
+			name:      "wild turkey adapts to duck behavior",
+			turkey:    &WildTurkey{},
+			wantQuack: "グワッグワッ",
+			wantFly:   "短い距離しか飛べません x 5回",
+		},
 	}
 
-	// アヒルとして「fly」したときに、七面鳥が5回飛ぶ動作に変換されているか確認する
-	expectedFly := "短い距離しか飛べません x 5回"
-	if got := adapter.Fly(); got != expectedFly {
-		t.Errorf("Fly() の結果が違います。期待値: %v, 実際: %v", expectedFly, got)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			duck := NewTurkeyAdapter(tt.turkey)
+
+			if got := duck.Quack(); got != tt.wantQuack {
+				t.Errorf("Quack() = %q, want %q", got, tt.wantQuack)
+			}
+			if got := duck.Fly(); got != tt.wantFly {
+				t.Errorf("Fly() = %q, want %q", got, tt.wantFly)
+			}
+		})
 	}
+}
+
+func TestTurkeyAdapterImplementsDuck(t *testing.T) {
+	var _ Duck = NewTurkeyAdapter(&WildTurkey{})
 }
