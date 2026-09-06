@@ -2,23 +2,46 @@ package chapter01
 
 import "fmt"
 
+const (
+	spaceRune     = ' '
+	urlSpace      = "%20"
+	urlSpaceLen   = len(urlSpace)
+	extraPerSpace = urlSpaceLen - 1 // ' ' (1 byte) expands to "%20" (3 bytes)
+)
+
+func countSpacesInString(input string) int {
+	count := 0
+	for _, character := range input {
+		if character == spaceRune {
+			count++
+		}
+	}
+	return count
+}
+
+func countSpacesInPrefix(input []byte, length int) int {
+	count := 0
+	for i := range length {
+		if input[i] == spaceRune {
+			count++
+		}
+	}
+	return count
+}
+
+func extraLengthForSpaces(spaceCount int) int {
+	return spaceCount * extraPerSpace
+}
+
 // ReplaceSpaces writes %20 into input in place. trueLength is the meaningful prefix.
 // Time O(n), space O(1).
 func ReplaceSpaces(input []byte, trueLength int) {
-	spaceCount := 0
-	for i := range trueLength {
-		if input[i] == ' ' {
-			spaceCount++
-		}
-	}
-	writeIndex := trueLength + spaceCount*2 - 1
+	spaceCount := countSpacesInPrefix(input, trueLength)
+	writeIndex := trueLength + extraLengthForSpaces(spaceCount) - 1
 	for readIndex := trueLength - 1; readIndex >= 0; readIndex-- {
-		if input[readIndex] == ' ' {
-			input[writeIndex] = '0'
-			writeIndex--
-			input[writeIndex] = '2'
-			writeIndex--
-			input[writeIndex] = '%'
+		if input[readIndex] == spaceRune {
+			writeIndex -= urlSpaceLen - 1
+			copy(input[writeIndex:writeIndex+urlSpaceLen], urlSpace)
 			writeIndex--
 		} else {
 			input[writeIndex] = input[readIndex]
@@ -28,13 +51,8 @@ func ReplaceSpaces(input []byte, trueLength int) {
 }
 
 func CreateBuffer(input string) []byte {
-	spaceCount := 0
-	for _, character := range input {
-		if character == ' ' {
-			spaceCount++
-		}
-	}
-	buf := make([]byte, len(input)+spaceCount*2)
+	spaceCount := countSpacesInString(input)
+	buf := make([]byte, len(input)+extraLengthForSpaces(spaceCount))
 	copy(buf, input)
 	return buf
 }
